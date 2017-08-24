@@ -18,8 +18,8 @@ main = do
   -- Here we should parse arguements, then scene file
   savePngImage path generateImg
 
-imgWidth = 150
-imgHeight = 100
+imgWidth = 800
+imgHeight = 600
 
 generateImg :: DynamicImage
 generateImg = ImageRGB8 (generateImage colorPixel imgWidth imgHeight)
@@ -28,7 +28,7 @@ generateImg = ImageRGB8 (generateImage colorPixel imgWidth imgHeight)
 
 -- Scene (would be nice to use actual types for different objects)
 
-background = [0.05,0.07,0.1]
+background = [0.08,0.1,0.15]
 
 cameraPos = [0,0,-3]
 
@@ -36,9 +36,9 @@ spherePos = [0,0,0]
 sphereRadius = 1.0
 sphereWiggleFreq = 7.0
 sphereWiggleAmp = 0.25
-sphereColor = [1,1,1]
+sphereColor = [0.9,0.95,1]
 
-planeHeight = -1.5
+planeHeight = -0.8
 
 reflectivity = 0.6
 
@@ -109,8 +109,8 @@ intersect origin direction = intersect' origin (normalize direction) 0
       where d = sceneSDF origin
 
 sceneSDF :: [Double] -> Double
-sceneSDF v = minimum $ [ wildSDF v [a,0,b] 1.0 0 0.5 | 
-  a <- [-1..2], b <- [-1..2] ] ++ [planeSDF v]
+sceneSDF v = minimum $ [ wildSDF v [x,z,z] (x*z) (0.08*x) 0.3 | 
+  x <- [-2..2], z <- [0..5] ] ++ [planeSDF v]
 
 planeSDF :: [Double] -> Double
 planeSDF v = dot v [0,1,0] - planeHeight
@@ -120,7 +120,7 @@ wildSDF v offset freq amp radius =
   distance (p `vecAdd` ( (vecSin (p `vecMulScalar` 
   freq) ) `vecMulScalar` amp ))
   spherePos - radius
-  where p = vecAdd v offset
+  where p = vecSub v offset
 
 sceneNormal :: [Double] -> [Double]
 sceneNormal v = normalize [partialDeriv v [1,0,0], 
