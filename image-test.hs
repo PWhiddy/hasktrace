@@ -87,36 +87,40 @@ radiance origin direction =
 
 shadowAtten :: [Double] -> [Double] -> Double
 shadowAtten origin direction = 
-  if (intersect (vecAdd origin (vecMulScalar direction 0.41)) direction) == escapeFlag
+  if (intersect p direction) == escapeFlag
     then 1.0
     else 0.05
+    where p = vecAdd origin (vecMulScalar direction 0.05)
 
 lightAtten :: [Double] -> Double
-lightAtten v = 1.0 / distance v lightPos
+lightAtten v = 1.0 / distance v lightPos 
 
 intersect :: [Double] -> [Double] -> [Double]
 intersect origin direction = intersect' origin (normalize direction) 0
     where 
   intersect' origin direction step
-      | intersectThreshold < sceneSDF origin &&
-        sceneSDF origin < escapeDistance && 
+      | intersectThreshold < d &&
+        d < escapeDistance && 
         step <= maxSteps = 
           intersect' (vecAdd origin $ vecMulScalar 
-          direction $ stepSize * (sceneSDF origin) ) direction (step+1)
-      | sceneSDF origin < intersectThreshold = origin
+          direction $ stepSize * d ) direction (step+1)
+      | d < intersectThreshold = origin
       | otherwise = escapeFlag
+      where d = sceneSDF origin
 
 sceneSDF :: [Double] -> Double
-sceneSDF v = min (wildSDF v) (planeSDF v)
-  
+sceneSDF v = minimum $ [ wildSDF v [a,0,b] 1.0 0 0.5 | 
+  a <- [-1..2], b <- [-1..2] ] ++ [planeSDF v]
+
 planeSDF :: [Double] -> Double
 planeSDF v = dot v [0,1,0] - planeHeight
 
-wildSDF :: [Double] -> Double
-wildSDF v = 
-  distance (v `vecAdd` ( (vecSin (v `vecMulScalar` 
-  sphereWiggleFreq) ) `vecMulScalar` sphereWiggleAmp ))
-  spherePos - sphereRadius
+wildSDF :: [Double] -> [Double] -> Double -> Double -> Double -> Double
+wildSDF v offset freq amp radius = 
+  distance (p `vecAdd` ( (vecSin (p `vecMulScalar` 
+  freq) ) `vecMulScalar` amp ))
+  spherePos - radius
+  where p = vecAdd v offset
 
 sceneNormal :: [Double] -> [Double]
 sceneNormal v = normalize [partialDeriv v [1,0,0], 
