@@ -18,8 +18,8 @@ main = do
   -- Here we should parse arguements, then scene file
   savePngImage path generateImg
 
-imgWidth = 200
-imgHeight = 150
+imgWidth = 1000
+imgHeight = 800
 
 generateImg :: DynamicImage
 generateImg = ImageRGB8 (generateImage colorPixel imgWidth imgHeight)
